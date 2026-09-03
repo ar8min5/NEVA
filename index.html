@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامه روزانه — متد NEVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4F1EA; --paper:#FFFFFF; --ink:#262420; --muted:#8B8272; --faint:#B9B29E;
+    --line:#E7E1D0; --linestrong:#D8D0BA;
+    --n:#7F77DD; --n-deep:#4A4295; --n-tint:#EFEDFC;
+    --e:#1D9E75; --e-deep:#0F6B4F; --e-tint:#E7F5EF;
+    --v:#FF8A3D; --v-deep:#B85A16; --v-tint:#FFF1E2;
+    --a:#D4537E; --a-deep:#96284C; --a-tint:#FCEAF0;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-tap-highlight-color:transparent; }
+  body{
+    font-family:'Vazirmatn', Tahoma, sans-serif;
+    background:var(--cream); color:var(--ink);
+    direction:rtl; line-height:1.7;
+    padding:clamp(14px,4vw,32px);
+  }
+  .shell{ max-width:760px; margin:0 auto; }
+
+  .brand{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px; }
+  .brand-stripe{ display:flex; width:132px; height:8px; border-radius:5px; overflow:hidden; }
+  .brand-stripe span{ flex:1; }
+  .brand-stripe .n{ background:var(--n); } .brand-stripe .e{ background:var(--e); }
+  .brand-stripe .v{ background:var(--v); } .brand-stripe .a{ background:var(--a); }
+  .brand-word{ font-size:13px; font-weight:700; color:var(--muted); letter-spacing:.5px; }
+
+  .console{ background:var(--paper); border-radius:20px; border:1px solid var(--line); overflow:hidden; }
+  .console-body{ padding:clamp(22px,5vw,42px); }
+
+  .progress-wrap{ padding:16px clamp(22px,5vw,42px) 0; }
+  .progress-label{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+  .progress-track{ height:6px; background:var(--cream); border-radius:4px; overflow:hidden; }
+  .progress-fill{ height:100%; border-radius:4px; background:var(--ink); transition:width .45s ease; }
+
+  .step{ display:none; }
+  .step.active{ display:block; animation:rise .35s ease; }
+  @keyframes rise{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+
+  h2.step-title{ font-size:22px; font-weight:800; margin-bottom:6px; }
+  p.step-hint{ font-size:13.5px; color:var(--muted); margin-bottom:22px; }
+
+  input[type=text], textarea{
+    width:100%; border:none; border-bottom:2px solid var(--linestrong);
+    font-family:inherit; font-size:15px; color:var(--ink); background:transparent;
+    padding:9px 2px; outline:none; transition:border-color .2s;
+  }
+  input[type=text]:focus, textarea:focus{ border-color:var(--ink); }
+  textarea{ resize:vertical; min-height:56px; line-height:1.6; }
+  ::placeholder{ color:var(--faint); }
+
+  .intro-fields{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+  .intro-fields .f{ flex:1; min-width:130px; }
+  .intro-fields label{ display:block; font-size:12px; color:var(--muted); font-weight:600; margin-bottom:4px; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .chip{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); background:var(--cream); padding:7px 12px; border-radius:20px; flex:1; min-width:150px; }
+  .dot{ width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff; flex-shrink:0; }
+  .dot.n{ background:var(--n);} .dot.e{ background:var(--e);} .dot.v{ background:var(--v);} .dot.a{ background:var(--a);}
+  .chip b{ color:var(--ink); }
+
+  .cta{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--ink); color:#fff; border:none; border-radius:12px;
+    font-family:inherit; font-size:15px; font-weight:700; padding:14px 22px;
+    cursor:pointer; width:100%; transition:opacity .15s, transform .1s;
+  }
+  .cta:active{ transform:scale(.98); }
+  .cta.ghost{ background:transparent; color:var(--ink); border:2px solid var(--linestrong); }
+  .cta.small{ width:auto; padding:10px 18px; font-size:13.5px; border-radius:10px; }
+
+  .goal-box{ background:var(--v-tint); border:1.5px solid #F4C892; border-radius:16px; padding:20px; }
+  .goal-label{ font-size:12.5px; font-weight:700; color:var(--v-deep); margin-bottom:8px; }
+  .goal-box input{ border-bottom-color:#F0BE7A; font-size:16px; font-weight:600; margin-bottom:16px; }
+  .goal-why{ font-size:12.5px; color:var(--v-deep); margin-bottom:6px; }
+  .goal-box textarea{ border-bottom-color:#F0BE7A; min-height:44px; }
+
+  .priority-list{ display:flex; flex-direction:column; gap:14px; }
+  .priority-item{ display:flex; align-items:center; gap:12px; }
+  .priority-number{ width:28px; height:28px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+  .priority-number.p1{ background:var(--a);} .priority-number.p2{ background:var(--v);} .priority-number.p3{ background:var(--e);}
+  .priority-item input{ flex:1; }
+
+  .row-card{ background:var(--cream); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .row-top{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+  .row-top input.time-in{ width:92px; flex-shrink:0; font-weight:700; font-size:13.5px; border-bottom-color:var(--linestrong); }
+  .row-top input.act-in{ flex:1; font-size:14px; }
+  .row-bottom{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .pillar-toggle{ display:flex; gap:6px; }
+  .pbtn{ width:30px; height:30px; border-radius:9px; border:1.5px solid var(--linestrong); background:#fff; color:var(--muted); font-size:12px; font-weight:800; cursor:pointer; }
+  .pbtn.n.on{ background:var(--n); border-color:var(--n); color:#fff; }
+  .pbtn.e.on{ background:var(--e); border-color:var(--e); color:#fff; }
+  .pbtn.v.on{ background:var(--v); border-color:var(--v); color:#fff; }
+  .pbtn.a.on{ background:var(--a); border-color:var(--a); color:#fff; }
+  .row-actions{ display:flex; align-items:center; gap:14px; }
+  .done-toggle{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer; user-select:none; }
+  .done-toggle input{ width:17px; height:17px; accent-color:var(--e); }
+  .rm-btn{ border:none; background:none; color:var(--faint); font-size:13px; cursor:pointer; font-weight:700; padding:4px 6px; }
+  .rm-btn:hover{ color:var(--a); }
+  .add-row{ display:flex; align-items:center; justify-content:center; gap:6px; width:100%; border:1.5px dashed var(--linestrong); background:transparent; border-radius:12px; padding:12px; font-family:inherit; font-size:13.5px; color:var(--muted); font-weight:700; cursor:pointer; margin-top:4px; }
+  .add-row:hover{ border-color:var(--ink); color:var(--ink); }
+
+  .energy-track{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .energy-slot{ background:var(--cream); border-radius:14px; padding:12px 10px; text-align:center; }
+  .es-label{ font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+  .energy-scale{ display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+  .energy-box{ width:100%; aspect-ratio:1/1; border:1.5px solid var(--linestrong); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:clamp(10.5px,3vw,12.5px); color:var(--muted); background:#fff; cursor:pointer; font-weight:700; }
+  .energy-box.on{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
+  .habit-grid{ display:flex; flex-direction:column; gap:10px; }
+  .habit-item{ display:flex; align-items:center; gap:10px; background:var(--e-tint); border-radius:12px; padding:13px 15px; font-size:13.5px; cursor:pointer; border:1.5px solid transparent; }
+  .habit-item.on{ border-color:var(--e); }
+  .habit-item .cb{ width:19px; height:19px; border:1.5px solid var(--e-deep); border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; }
+  .habit-item.on .cb{ background:var(--e); }
+  .habit-item.on .cb:after{ content:"✓"; color:#fff; font-size:12px; font-weight:800; }
+
+  .review-grid{ display:flex; flex-direction:column; gap:16px; }
+  .review-q{ font-size:13.5px; font-weight:700; margin-bottom:6px; }
+
+  .nav-row{ display:flex; justify-content:space-between; gap:12px; margin-top:30px; }
+  .nav-row .cta{ width:auto; flex:1; }
+
+  .report-hero{ text-align:center; padding:6px 0 22px; border-bottom:1px solid var(--line); margin-bottom:22px; }
+  .report-eyebrow{ font-size:12.5px; color:var(--muted); font-weight:700; margin-bottom:4px; }
+  .report-name{ font-size:20px; font-weight:800; margin-bottom:16px; }
+  .score-ring-wrap{ display:flex; justify-content:center; margin-bottom:10px; }
+  .score-num{ font-size:44px; font-weight:800; }
+  .score-sub{ font-size:12.5px; color:var(--muted); font-weight:600; }
+
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:26px; }
+  .stat-card{ background:var(--cream); border-radius:12px; padding:14px; }
+  .stat-card .sv{ font-size:20px; font-weight:800; }
+  .stat-card .sl{ font-size:11.5px; color:var(--muted); font-weight:600; margin-top:2px; }
+
+  .rep-section{ margin-bottom:26px; }
+  .rep-title{ font-size:14px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .bar-row .bl{ width:74px; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0; }
+  .bar-track{ flex:1; height:16px; background:var(--cream); border-radius:8px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:8px; transition:width .6s ease; }
+  .bar-fill.n{ background:var(--n); } .bar-fill.e{ background:var(--e); }
+  .bar-fill.v{ background:var(--v); } .bar-fill.a{ background:var(--a); }
+  .bar-row .bn{ width:26px; text-align:left; font-size:12px; font-weight:700; flex-shrink:0; }
+
+  .energy-line-wrap{ background:var(--cream); border-radius:14px; padding:16px; }
+  .energy-labels{ display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-weight:700; margin-top:6px; }
+
+  .ring-row{ display:flex; align-items:center; gap:18px; background:var(--cream); border-radius:14px; padding:16px; }
+  .ring-text{ font-size:13px; color:var(--muted); }
+  .ring-text b{ display:block; font-size:15px; color:var(--ink); margin-bottom:2px; }
+
+  .narrative p{ font-size:14px; color:#3b382f; margin-bottom:12px; }
+  .narrative p:last-child{ margin-bottom:0; }
+  .narrative b{ color:var(--ink); }
+
+  .report-actions{ display:flex; gap:10px; margin-top:8px; }
+  footer{ text-align:center; font-size:11px; color:var(--faint); margin-top:22px; padding-top:16px; }
+
+  @media (min-width:640px){
+    .energy-track{ grid-template-columns:repeat(4,1fr); }
+    .row-top{ flex-wrap:nowrap; }
+  }
+
+  @media print{
+    body{ background:#fff; padding:0; }
+    .console{ border:none; }
+    .progress-wrap, .nav-row, .report-actions, .brand-word{ display:none; }
+    .step{ display:none !important; }
+    .step.report-print{ display:block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="brand">
+    <div class="brand-stripe"><span class="n"></span><span class="e"></span><span class="v"></span><span class="a"></span></div>
+    <div class="brand-word">متد NEVA</div>
+  </div>
+
+  <div class="console">
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label"><span id="progLabel">مرحله ۱ از ۶</span><span id="progPct">۱۷٪</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progFill" style="width:17%"></div></div>
+    </div>
+
+    <div class="console-body">
+
+      <!-- INTRO -->
+      <div class="step active" data-step="intro">
+        <h2 class="step-title">برنامه روزانه‌ت رو بساز</h2>
+        <p class="step-hint">چند دقیقه وقت بذار، امروزت رو طراحی کن، و آخرش یه گزارش تحلیلی از خودت بگیر.</p>
+        <div class="intro-fields">
+          <div class="f"><label>نام</label><input type="text" id="f-name" placeholder="اسمت رو بنویس"></div>
+          <div class="f"><label>تاریخ</label><input type="text" id="f-date" placeholder="مثلاً ۱۰ شهریور"></div>
+          <div class="f"><label>روز هفته</label><input type="text" id="f-day" placeholder="مثلاً دوشنبه"></div>
+        </div>
+        <div class="legend">
+          <div class="chip"><span class="dot n">N</span><span><b>نورو</b> — تمرکز ذهنی</span></div>
+          <div class="chip"><span class="dot e">E</span><span><b>کارآمد</b> — اجرا و پیشرفت</span></div>
+          <div class="chip"><span class="dot v">V</span><span><b>نشاط</b> — انرژی و تحرک</span></div>
+          <div class="chip"><span class="dot a">A</span><span><b>تطبیقی</b> — انعطاف و استراحت</span></div>
+        </div>
+        <div style="margin-top:28px;">
+          <button class="cta" id="startBtn">شروع کن</button>
+        </div>
+      </div>
+
+      <!-- GOAL -->
+      <div class="step" data-step="goal">
+        <h2 class="step-title">هدف امروز</h2>
+        <p class="step-hint">اگه فقط یک چیز امروز پیش بره، چی باید باشه؟</p>
+        <div class="goal-box">
+          <div class="goal-label">مهم‌ترین چیزی که امروز باید تمومش کنم</div>
+          <input type="text" id="f-goal" placeholder="مثلاً جمع‌بندی فصل ۳ فیزیک">
+          <div class="goal-why">چرا این هدف امروز مهمه؟</div>
+          <textarea id="f-why" placeholder="یه جمله کوتاه بنویس"></textarea>
+        </div>
+      </div>
+
+      <!-- PRIORITIES -->
+      <div class="step" data-step="priorities">
+        <h2 class="step-title">سه اولویت امروز</h2>
+        <p class="step-hint">بر اساس اهمیت مرتب کن — از بالا شروع کن.</p>
+        <div class="priority-list">
+          <div class="priority-item"><span class="priority-number p1">۱</span><input type="text" id="f-p1" placeholder="اولویت اول"></div>
+          <div class="priority-item"><span class="priority-number p2">۲</span><input type="text" id="f-p2" placeholder="اولویت دوم"></div>
+          <div class="priority-item"><span class="priority-number p3">۳</span><input type="text" id="f-p3" placeholder="اولویت سوم"></div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div class="step" data-step="schedule">
+        <h2 class="step-title">جدول زمان‌بندی روز</h2>
+        <p class="step-hint">هر بازه رو بنویس، رکنش رو انتخاب کن، و بعد از انجام تیک بزن.</p>
+        <div id="scheduleRows"></div>
+        <button class="add-row" id="addRowBtn">+ افزودن بازه زمانی</button>
+      </div>
+
+      <!-- ENERGY -->
+      <div class="step" data-step="energy">
+        <h2 class="step-title">ردیابی انرژی</h2>
+        <p class="step-hint">در هر بازه، سطح تمرکز و انرژیت رو از ۱ تا ۵ انتخاب کن.</p>
+        <div class="energy-track" id="energyTrack"></div>
+      </div>
+
+      <!-- HABITS -->
+      <div class="step" data-step="habits">
+        <h2 class="step-title">عادت‌های نشاط امروز</h2>
+        <p class="step-hint">هر کدوم رو که انجام دادی یا میدی، لمس کن.</p>
+        <div class="habit-grid" id="habitGrid"></div>
+      </div>
+
+      <!-- REVIEW -->
+      <div class="step" data-step="review">
+        <h2 class="step-title">بازبینی شبانه</h2>
+        <p class="step-hint">آخر روز، چند دقیقه به این سه سوال فکر کن.</p>
+        <div class="review-grid">
+          <div><div class="review-q">امروز چی خوب پیش رفت؟</div><textarea id="f-r1" placeholder="بنویس..."></textarea></div>
+          <div><div class="review-q">چی سخت‌تر از حد انتظار بود؟</div><textarea id="f-r2" placeholder="بنویس..."></textarea></div>
+          <div><div class="review-q">فردا دقیقاً چه چیزی رو تغییر می‌دی؟</div><textarea id="f-r3" placeholder="بنویس..."></textarea></div>
+        </div>
+      </div>
+
+      <!-- REPORT -->
+      <div class="step report-print" data-step="report">
+        <div class="report-hero">
+          <div class="report-eyebrow">گزارش تحلیلی روز</div>
+          <div class="report-name" id="repName">—</div>
+          <div class="score-ring-wrap"><div class="score-num" id="scoreNum">۰</div></div>
+          <div class="score-sub">امتیاز NEVA از ۱۰۰</div>
+        </div>
+
+        <div class="stat-grid" id="statGrid"></div>
+
+        <div class="rep-section">
+          <div class="rep-title">توزیع رکن‌های برنامه</div>
+          <div id="pillarBars"></div>
+        </div>
+
+        <div class="rep-section">
+          <div class="rep-title">روند انرژی روز</div>
+          <div class="energy-line-wrap">
+            <svg id="energySvg" viewBox="0 0 300 100" width="100%" height="100" preserveAspectRatio="none"></svg>
+            <div class="energy-labels"><span>صبح</span><span>ظهر</span><span>عصر</span><span>شب</span></div>
+          </div>
+        </div>
+
+        <div class="rep-section">
+          <div class="rep-title">عادت‌های نشاط</div>
+          <div class="ring-row">
+            <svg width="64" height="64" viewBox="0 0 64 64" id="habitRingSvg"></svg>
+            <div class="ring-text"><b id="habitRingText">۰ از ۴</b>از عادت‌های نشاط امروز انجام شد</div>
+          </div>
+        </div>
+
+        <div class="rep-section">
+          <div class="rep-title">تحلیل و پیشنهاد</div>
+          <div class="narrative" id="narrative"></div>
+        </div>
+
+        <div class="report-actions">
+          <button class="cta ghost small" id="resetBtn">شروع دوباره</button>
+          <button class="cta small" id="printBtn" style="flex:1;">چاپ گزارش</button>
+        </div>
+
+        <footer>متد NEVA — طراحی‌شده توسط خسروی، مشاور تحصیلی</footer>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nav-row" id="navRow">
+    <button class="cta ghost" id="prevBtn">قبلی</button>
+    <button class="cta" id="nextBtn">بعدی</button>
+  </div>
+
+</div>
+
+<script>
+const PILLARS = { n:{label:'نورو', full:'تمرکز ذهنی و مطالعه عمیق'}, e:{label:'کارآمد', full:'اجرا، تکلیف و پیشرفت'}, v:{label:'نشاط', full:'انرژی، تحرک و تفریح'}, a:{label:'تطبیقی', full:'استراحت و انعطاف'} };
+
+const state = {
+  name:'', date:'', day:'', goal:'', why:'', p:['','',''],
+  schedule:[
+    {time:'',activity:'',pillar:'v',done:false},
+    {time:'',activity:'',pillar:'n',done:false},
+    {time:'',activity:'',pillar:'e',done:false},
+    {time:'',activity:'',pillar:'v',done:false},
+    {time:'',activity:'',pillar:'a',done:false}
+  ],
+  energy:{morning:null,noon:null,evening:null,night:null},
+  habits:{water:false,move:false,sleep:false,meal:false},
+  review:['','','']
+};
+
+const steps = ['intro','goal','priorities','schedule','energy','habits','review','report'];
+let cur = 0;
+
+function goTo(i){ cur = i; render(); }
+function nextStep(){ syncFields(); if(cur < steps.length-1){ cur++; render(); } }
+function prevStep(){ syncFields(); if(cur > 0){ cur--; render(); } }
+
+function syncFields(){
+  const s = steps[cur];
+  if(s==='intro'){ state.name=val('f-name'); state.date=val('f-date'); state.day=val('f-day'); }
+  if(s==='goal'){ state.goal=val('f-goal'); state.why=val('f-why'); }
+  if(s==='priorities'){ state.p=[val('f-p1'),val('f-p2'),val('f-p3')]; }
+  if(s==='review'){ state.review=[val('f-r1'),val('f-r2'),val('f-r3')]; }
+}
+function val(id){ const el=document.getElementById(id); return el? el.value.trim() : ''; }
+
+function render(){
+  document.querySelectorAll('.step').forEach(el=>el.classList.remove('active'));
+  document.querySelector('.step[data-step="'+steps[cur]+'"]').classList.add('active');
+
+  const isIntro = steps[cur]==='intro';
+  const isReport = steps[cur]==='report';
+  document.getElementById('progressWrap').style.display = (isIntro||isReport) ? 'none' : 'block';
+  document.getElementById('navRow').style.display = (isIntro||isReport) ? 'none' : 'flex';
+
+  if(!isIntro && !isReport){
+    const fillIdx = cur;
+    const total = 6;
+    document.getElementById('progLabel').textContent = 'مرحله '+toFa(fillIdx)+' از '+toFa(total);
+    const pct = Math.round(fillIdx/total*100);
+    document.getElementById('progPct').textContent = toFa(pct)+'٪';
+    document.getElementById('progFill').style.width = pct+'%';
+    document.getElementById('prevBtn').style.visibility = cur===1 ? 'hidden':'visible';
+    document.getElementById('nextBtn').textContent = cur===6 ? 'مشاهده گزارش نهایی' : 'بعدی';
+  }
+
+  if(steps[cur]==='goal'){ setVal('f-goal',state.goal); setVal('f-why',state.why); }
+  if(steps[cur]==='priorities'){ setVal('f-p1',state.p[0]); setVal('f-p2',state.p[1]); setVal('f-p3',state.p[2]); }
+  if(steps[cur]==='schedule'){ renderSchedule(); }
+  if(steps[cur]==='energy'){ renderEnergy(); }
+  if(steps[cur]==='habits'){ renderHabits(); }
+  if(steps[cur]==='review'){ setVal('f-r1',state.review[0]); setVal('f-r2',state.review[1]); setVal('f-r3',state.review[2]); }
+  if(steps[cur]==='report'){ buildReport(); }
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value=v||''; }
+
+function renderSchedule(){
+  const wrap = document.getElementById('scheduleRows');
+  wrap.innerHTML = '';
+  state.schedule.forEach((row,i)=>{
+    const card = document.createElement('div');
+    card.className='row-card';
+    const pbtns = ['n','e','v','a'].map(k=>'<button type="button" class="pbtn '+k+(row.pillar===k?' on':'')+'" data-action="setPillar" data-i="'+i+'" data-k="'+k+'">'+k.toUpperCase()+'</button>').join('');
+    card.innerHTML =
+      '<div class="row-top">'+
+        '<input type="text" class="time-in" placeholder="ساعت" value="'+esc(row.time)+'" data-action="updateRow" data-i="'+i+'" data-field="time">'+
+        '<input type="text" class="act-in" placeholder="فعالیت این بازه" value="'+esc(row.activity)+'" data-action="updateRow" data-i="'+i+'" data-field="activity">'+
+      '</div>'+
+      '<div class="row-bottom">'+
+        '<div class="pillar-toggle">'+pbtns+'</div>'+
+        '<div class="row-actions">'+
+          '<label class="done-toggle"><input type="checkbox" '+(row.done?'checked':'')+' data-action="updateRow" data-i="'+i+'" data-field="done"> انجام شد</label>'+
+          '<button type="button" class="rm-btn" data-action="removeRow" data-i="'+i+'">حذف</button>'+
+        '</div>'+
+      '</div>';
+    wrap.appendChild(card);
+  });
+}
+function setPillar(i,k){ state.schedule[i].pillar=k; renderSchedule(); }
+function updateRow(i,field,v){ state.schedule[i][field]=v; }
+function removeRow(i){ state.schedule.splice(i,1); renderSchedule(); }
+function addRow(){ if(state.schedule.length>=12) return; state.schedule.push({time:'',activity:'',pillar:'v',done:false}); renderSchedule(); }
+
+function renderEnergy(){
+  const labels = {morning:'صبح',noon:'ظهر',evening:'عصر',night:'شب'};
+  const wrap = document.getElementById('energyTrack');
+  wrap.innerHTML='';
+  Object.keys(labels).forEach(key=>{
+    const slot = document.createElement('div');
+    slot.className='energy-slot';
+    let boxes='';
+    for(let n=1;n<=5;n++){
+      boxes += '<span class="energy-box'+(state.energy[key]===n?' on':'')+'" data-action="setEnergy" data-key="'+key+'" data-n="'+n+'">'+toFa(n)+'</span>';
+    }
+    slot.innerHTML = '<div class="es-label">'+labels[key]+'</div><div class="energy-scale">'+boxes+'</div>';
+    wrap.appendChild(slot);
+  });
+}
+function setEnergy(key,n){ state.energy[key] = (state.energy[key]===n) ? null : n; renderEnergy(); }
+
+function renderHabits(){
+  const list = [
+    {key:'water', label:'آب کافی خوردم'},
+    {key:'move', label:'حرکت بدنی یا ورزش داشتم'},
+    {key:'sleep', label:'دیشب ۷+ ساعت خوابیدم'},
+    {key:'meal', label:'حداقل یک وعده غذای سالم'}
+  ];
+  const wrap = document.getElementById('habitGrid');
+  wrap.innerHTML='';
+  list.forEach(h=>{
+    const on = state.habits[h.key];
+    const item = document.createElement('div');
+    item.className='habit-item'+(on?' on':'');
+    item.onclick=()=>{ state.habits[h.key]=!state.habits[h.key]; renderHabits(); };
+    item.innerHTML = '<span class="cb"></span>'+h.label;
+    wrap.appendChild(item);
+  });
+}
+
+function toFa(n){ const d=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; return String(n).split('').map(c=> /[0-9]/.test(c)? d[c]:c).join(''); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function computeReport(){
+  const filledSchedule = state.schedule.filter(r=>r.activity.trim().length>0);
+  const totalActs = filledSchedule.length;
+  const doneCount = filledSchedule.filter(r=>r.done).length;
+  const completionRate = totalActs>0 ? doneCount/totalActs : 0;
+
+  const pillarCounts = {n:0,e:0,v:0,a:0};
+  filledSchedule.forEach(r=> pillarCounts[r.pillar]++ );
+  const pillarMax = Math.max(1, ...Object.values(pillarCounts));
+
+  const energyKeys = ['morning','noon','evening','night'];
+  const energyVals = energyKeys.map(k=>state.energy[k]);
+  const energyFilled = energyVals.filter(v=>v!==null);
+
+  const habitsChecked = Object.values(state.habits).filter(Boolean).length;
+
+  const pFilled = state.p.filter(x=>x.trim().length>0).length;
+  const reviewFilled = state.review.filter(x=>x.trim().length>0).length;
+
+  const goalScore = state.goal.trim() ? 10 : 0;
+  const whyScore = state.why.trim() ? 5 : 0;
+  const prioritiesScore = (pFilled/3)*15;
+  const scheduleScore = Math.min(totalActs/6,1)*20;
+  const completionScore = totalActs>0 ? completionRate*15 : 0;
+  const energyScore = (energyFilled.length/4)*10;
+  const habitsScore = (habitsChecked/4)*15;
+  const reviewScore = (reviewFilled/3)*10;
+  const overall = Math.round(goalScore+whyScore+prioritiesScore+scheduleScore+completionScore+energyScore+habitsScore+reviewScore);
+
+  let dominant = 'v', dmax=-1;
+  ['n','e','v','a'].forEach(k=>{ if(pillarCounts[k]>dmax){ dmax=pillarCounts[k]; dominant=k; } });
+  let weakest = 'a', wmin=999;
+  ['n','e','v','a'].forEach(k=>{ if(pillarCounts[k]<wmin){ wmin=pillarCounts[k]; weakest=k; } });
+
+  return { totalActs, doneCount, completionRate, pillarCounts, pillarMax, energyVals, energyFilled, habitsChecked, pFilled, reviewFilled, overall, dominant, weakest };
+}
+
+function buildReport(){
+  const r = computeReport();
+  document.getElementById('repName').textContent = state.name ? state.name : 'دانش‌آموز NEVA';
+
+  animateScore(r.overall);
+
+  const statGrid = document.getElementById('statGrid');
+  statGrid.innerHTML =
+    stat(toFa(r.totalActs), 'فعالیت برنامه‌ریزی‌شده') +
+    stat(toFa(r.doneCount)+'/'+toFa(r.totalActs||0), 'فعالیت انجام‌شده') +
+    stat(r.energyFilled.length? toFa(Math.round(r.energyFilled.reduce((a,b)=>a+b,0)/r.energyFilled.length)) : '—', 'میانگین انرژی از ۵') +
+    stat(toFa(r.habitsChecked)+'/۴', 'عادت نشاط انجام‌شده');
+
+  const bars = document.getElementById('pillarBars');
+  bars.innerHTML = '';
+  ['n','e','v','a'].forEach(k=>{
+    const c = r.pillarCounts[k];
+    const pct = Math.round((c/r.pillarMax)*100);
+    bars.innerHTML += '<div class="bar-row"><div class="bl">'+PILLARS[k].label+'</div><div class="bar-track"><div class="bar-fill '+k+'" style="width:'+pct+'%"></div></div><div class="bn">'+toFa(c)+'</div></div>';
+  });
+
+  drawEnergyLine(r.energyVals);
+  drawHabitRing(r.habitsChecked);
+
+  document.getElementById('narrative').innerHTML = buildNarrative(r);
+}
+
+function stat(v,l){ return '<div class="stat-card"><div class="sv">'+v+'</div><div class="sl">'+l+'</div></div>'; }
+
+function animateScore(target){
+  const el = document.getElementById('scoreNum');
+  let cur = 0;
+  const step = Math.max(1, Math.round(target/24));
+  const iv = setInterval(()=>{
+    cur += step;
+    if(cur>=target){ cur=target; clearInterval(iv); }
+    el.textContent = toFa(cur);
+  }, 18);
+}
+
+function drawEnergyLine(vals){
+  const svg = document.getElementById('energySvg');
+  const pts = [];
+  const xs = [30,120,210,290];
+  vals.forEach((v,i)=>{ if(v!==null) pts.push([xs[i], 90 - (v-1)*20]); });
+  let inner = '<line x1="0" y1="90" x2="300" y2="90" stroke="var(--linestrong,#D8D0BA)" stroke-width="1"/>';
+  if(pts.length>=2){
+    const path = pts.map((p,i)=> (i===0?'M':'L')+p[0]+','+p[1]).join(' ');
+    inner += '<path d="'+path+'" fill="none" stroke="#262420" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  pts.forEach(p=>{ inner += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="5" fill="#262420"/>'; });
+  if(pts.length===0){ inner += '<text x="150" y="55" text-anchor="middle" font-size="11" fill="#8B8272">هنوز انرژی ثبت نشده</text>'; }
+  svg.innerHTML = inner;
+}
+
+function drawHabitRing(checked){
+  const svg = document.getElementById('habitRingSvg');
+  const r=26, c=2*Math.PI*r, pct = checked/4;
+  svg.innerHTML =
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" stroke="#E7F5EF" stroke-width="7"/>'+
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" stroke="#1D9E75" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(c*pct)+' '+c+'" transform="rotate(-90 32 32)"/>';
+  document.getElementById('habitRingText').textContent = toFa(checked)+' از ۴';
+}
+
+function buildNarrative(r){
+  const p = [];
+
+  if(r.overall>=85) p.push('برنامه امروزت رو با نظم و دقت زیادی چیدی. تقریباً همه بخش‌های متد NEVA رو پوشش دادی، و همین باعث میشه روزت هم مسیر مشخص داشته باشه و هم قابل ارزیابی باشه.');
+  else if(r.overall>=65) p.push('برنامه امروزت تقریباً کامله. بیشتر بخش‌ها پر شده و ساختار روز مشخصه، فقط چند جای خالی مونده که با کمی دقت بیشتر می‌تونی گزارش فرداتو کامل‌تر کنی.');
+  else if(r.overall>=40) p.push('شروع خوبی داشتی، اما هنوز بخش‌های مهمی از برنامه خالی مونده. هر بخشی که پر نشه، یعنی اون قسمت از روزت بدون نقشه پیش میره.');
+  else p.push('امروز بیشتر بخش‌های برنامه خام مونده. این طبیعیه، ولی برای اینکه متد NEVA واقعاً روی روزت اثر بذاره، لازمه حداقل هدف، اولویت‌ها و چندتا از بازه‌های زمانی رو کامل کنی.');
+
+  const domInfo = PILLARS[r.dominant];
+  if(r.totalActs>0){
+    p.push('محور اصلی برنامه‌ات امروز رکن <b>'+domInfo.label+'</b> بوده — یعنی بیشتر وقتت صرف '+domInfo.full+' شده. رکن <b>'+PILLARS[r.weakest].label+'</b> کمترین سهم رو داشته؛ اگه فردا کمی از این رکن هم اضافه کنی، روزت متعادل‌تر می‌شه.');
+  } else {
+    p.push('هنوز هیچ بازه‌ای توی جدول زمان‌بندی ثبت نشده، پس نمی‌تونیم توزیع رکن‌های N/E/V/A رو تحلیل کنیم.');
+  }
+
+  if(r.energyFilled.length>=2){
+    const first = r.energyFilled[0], last = r.energyFilled[r.energyFilled.length-1];
+    if(last - first <= -2) p.push('انرژی‌ت در طول روز افت محسوسی داشته. این معمولاً نشونه اینه که بازه‌های استراحت یا رکن تطبیقی کافی توی برنامه نبوده — برای فردا یه استراحت کوتاه وسط روز در نظر بگیر.');
+    else if(last - first >= 2) p.push('انرژی‌ت رو به رشد بوده و به شب که رسیدی هنوز بالا بوده. این الگوی خوبیه، فقط مراقب باش این انرژی باعث نشه خواب شبت دیر بشه.');
+    else p.push('سطح انرژی‌ت در طول روز نسبتاً پایدار بوده، که نشونه ریتم متعادلیه.');
+  } else if(r.energyFilled.length>0){
+    p.push('فقط بخشی از بازه‌های انرژی ثبت شده. برای دیدن روند کامل روز، بهتره هر چهار بازه رو پر کنی.');
+  }
+
+  if(r.habitsChecked>=3) p.push('عادت‌های نشاط رو خوب رعایت کردی — '+toFa(r.habitsChecked)+' از ۴ مورد انجام شده. همین عادت‌های ساده پایه انرژی پایدار روزهای بعده.');
+  else if(r.habitsChecked>=1) p.push('بخشی از عادت‌های نشاط انجام شده. تکمیل بقیه‌شون کمک می‌کنه انرژی روزهای بعد ثابت‌تر بمونه.');
+  else p.push('هیچ‌کدوم از عادت‌های نشاط هنوز ثبت نشده. آب، حرکت بدنی، خواب کافی و تغذیه سالم پایه‌ای‌ترین ورودی‌های انرژی روزتن.');
+
+  if(r.totalActs>0){
+    const cp = Math.round(r.completionRate*100);
+    if(cp>=80) p.push('نرخ انجام برنامه‌ات '+toFa(cp)+'٪ بوده — یعنی تقریباً هر چی نوشتی، انجامش دادی. این سطح از تعهد به برنامه، دقیقاً همون چیزیه که متد NEVA دنبالشه.');
+    else if(cp>=40) p.push('از فعالیت‌هایی که نوشتی، '+toFa(cp)+'٪ انجام شده. برای فردا سعی کن تعداد کمتری بازه بنویسی ولی همه‌شون رو تموم کنی.');
+    else p.push('نرخ انجام برنامه پایینه ('+toFa(cp)+'٪). شاید برنامه امروز پرتراکم بوده — فردا با تعداد کمتر ولی واقعی‌تر شروع کن.');
+  }
+
+  if(state.goal.trim()){
+    p.push('هدف امروزت این بود: «'+esc(state.goal)+'». برای فردا، این هدف رو با یکی از رکن‌های کم‌سهم‌تر ترکیب کن تا هم روی هدف اصلی پیش بری، هم روزت متعادل‌تر بشه.');
+  }
+
+  return p.map(x=>'<p>'+x+'</p>').join('');
+}
+
+function resetAll(){
+  state.name=''; state.date=''; state.day=''; state.goal=''; state.why=''; state.p=['','',''];
+  state.schedule=[
+    {time:'',activity:'',pillar:'v',done:false},
+    {time:'',activity:'',pillar:'n',done:false},
+    {time:'',activity:'',pillar:'e',done:false},
+    {time:'',activity:'',pillar:'v',done:false},
+    {time:'',activity:'',pillar:'a',done:false}
+  ];
+  state.energy={morning:null,noon:null,evening:null,night:null};
+  state.habits={water:false,move:false,sleep:false,meal:false};
+  state.review=['','',''];
+  setVal('f-name',''); setVal('f-date',''); setVal('f-day','');
+  cur=0; render();
+}
+
+function addTap(el, handler){
+  if(!el) return;
+  el.addEventListener('touchend', function(e){
+    e.preventDefault();
+    handler(e);
+  }, {passive:false});
+  el.addEventListener('click', handler);
+}
+function addTapDelegate(containerId, handler){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.addEventListener('touchend', function(e){
+    const t = e.changedTouches && e.changedTouches[0] ? document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY) : e.target;
+    if(t){ e.preventDefault(); handler({target:t}); }
+  }, {passive:false});
+  el.addEventListener('click', handler);
+}
+
+addTap(document.getElementById('startBtn'), function(){ goTo(1); });
+addTap(document.getElementById('addRowBtn'), addRow);
+addTap(document.getElementById('resetBtn'), resetAll);
+addTap(document.getElementById('printBtn'), function(){ window.print(); });
+addTap(document.getElementById('prevBtn'), prevStep);
+addTap(document.getElementById('nextBtn'), nextStep);
+
+addTapDelegate('scheduleRows', function(e){
+  const pbtn = e.target.closest('[data-action="setPillar"]');
+  if(pbtn){ setPillar(parseInt(pbtn.dataset.i,10), pbtn.dataset.k); return; }
+  const rm = e.target.closest('[data-action="removeRow"]');
+  if(rm){ removeRow(parseInt(rm.dataset.i,10)); return; }
+});
+document.getElementById('scheduleRows').addEventListener('input', function(e){
+  const t = e.target;
+  if(t.dataset.action==='updateRow' && t.dataset.field!=='done'){
+    updateRow(parseInt(t.dataset.i,10), t.dataset.field, t.value);
+  }
+});
+document.getElementById('scheduleRows').addEventListener('change', function(e){
+  const t = e.target;
+  if(t.dataset.action==='updateRow' && t.dataset.field==='done'){
+    updateRow(parseInt(t.dataset.i,10), 'done', t.checked);
+  }
+});
+
+addTapDelegate('energyTrack', function(e){
+  const b = e.target.closest('[data-action="setEnergy"]');
+  if(b){ setEnergy(b.dataset.key, parseInt(b.dataset.n,10)); }
+});
+
+render();
+</script>
+</body>
+</html>
